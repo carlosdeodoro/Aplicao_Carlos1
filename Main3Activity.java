@@ -36,7 +36,7 @@ public class Main3Activity extends AppCompatActivity {
         listadecliente = (ListView) findViewById(R.id.listadecliente);
         btvoltarcl = (Button)findViewById(R.id.btvoltarcl);
         setSupportActionBar(toolbar);
-
+//bla bla
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
