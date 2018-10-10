@@ -52,16 +52,16 @@ public class Main3Activity extends AppCompatActivity {
             public void onClick(View v) {
                 DbHelper mDbHelper = new DbHelper(getBaseContext());
                 SQLiteDatabase db = mDbHelper.getWritableDatabase();
-                Cursor c = db.rawQuery("select max(cod_cliente) from clientes",null);
-                int idcliente=0;
+                Cursor c = db.rawQuery("select max(codigo_cliente) from clientes",null);
+                int idcliente = 0;
                 if (c.moveToFirst())
                 {
                     idcliente=c.getInt(0);
                 }
-                idcliente+=1;
+                idcliente += 1;
                 ContentValues values = new ContentValues();
                 values.put("CODIGO_CLIENTE", idcliente);
-                values.put("NOME", "CARLOS - "+idcliente);
+                values.put("NOME_CLIENTE", "CARLOS - "+idcliente);
                 values.put("CPF", "10696956616/"+idcliente);
                 long newRowId;
                 newRowId = db.insert("CLIENTES",null,values);
@@ -82,7 +82,7 @@ public class Main3Activity extends AppCompatActivity {
                                 public void run() {
                                     DbHelper mDbHelper = new DbHelper(getBaseContext());
                                     SQLiteDatabase db = mDbHelper.getWritableDatabase();
-                                    Cursor c = db.query("CLIENTES",new String[]{"CODIGO_CLIENTE","NOME","CPF"},null,null,null,null,"NOME");
+                                    Cursor c = db.query("CLIENTES",new String[]{"CODIGO_CLIENTE","NOME_CLIENTE","CPF"},null,null,null,null,"NOME_CLIENTE");
                                     boolean proximo = true;
 
                                     if (c.moveToFirst())
