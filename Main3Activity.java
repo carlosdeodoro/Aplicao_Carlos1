@@ -70,7 +70,7 @@ public class Main3Activity extends AppCompatActivity {
                                 public void run() {
                                     DbHelper mDbHelper = new DbHelper(getBaseContext());
                                     SQLiteDatabase db = mDbHelper.getWritableDatabase();
-                                    Cursor c = db.query("CLIENTES",new String[]{"CODIGO_CLIENTE","NOME_CLIENTE","CPF"},null,null,null,null,"NOME_CLIENTE");
+                                    Cursor c = db.query("CLIENTES",new String[]{"CODIGO_CLIENTE","NOME_CLIENTE","CPF"},null,null,null,null,"CODIGO_CLIENTE");
                                     boolean proximo = true;
 
                                     if (c.moveToFirst())

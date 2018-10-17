@@ -40,12 +40,13 @@ public class Inserir_Cliente extends AppCompatActivity {
                 }
                 idcliente += 1;
                 ContentValues contentValues = new ContentValues();
-                contentValues.put("CODIGO_CLIENTE", idcliente);
+                contentValues.put("CODIGO_CLIENTE - ", idcliente);
                 contentValues.put("NOME_CLIENTE", txtNome.getText().toString());
                 contentValues.put("CPF", txtCPF.getText().toString());
                 long newRowId;
-                newRowId = db.insert("CLIENTES","CODIGO_CLIENTE" , null);
+                newRowId = db.insert("CLIENTES","CODIGO_CLIENTE" , contentValues);
                 Toast.makeText(getBaseContext(), "Cadastro realizado com sucesso", Toast.LENGTH_SHORT).show();
+
 
 
             }
