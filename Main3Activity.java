@@ -2,6 +2,7 @@ package com.example.curso.aplicao_carlos;
 
 import android.app.ProgressDialog;
 import android.content.ContentValues;
+import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
@@ -50,23 +51,10 @@ public class Main3Activity extends AppCompatActivity {
         btinsericl.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                DbHelper mDbHelper = new DbHelper(getBaseContext());
-                SQLiteDatabase db = mDbHelper.getWritableDatabase();
-                Cursor c = db.rawQuery("select max(codigo_cliente) from clientes",null);
-                int idcliente = 0;
-                if (c.moveToFirst())
-                {
-                    idcliente=c.getInt(0);
-                }
-                idcliente += 1;
-                ContentValues values = new ContentValues();
-                values.put("CODIGO_CLIENTE", idcliente);
-                values.put("NOME_CLIENTE", "CARLOS - "+idcliente);
-                values.put("CPF", "10696956616/"+idcliente);
-                long newRowId;
-                newRowId = db.insert("CLIENTES",null,values);
+                startActivity(new Intent(getBaseContext(), Inserir_Cliente.class));
             }
-        });
+
+            });
         btListcl.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -130,7 +118,6 @@ public class Main3Activity extends AppCompatActivity {
             }
         });
     }
-
 
     @Override
     public boolean onSupportNavigateUp()
