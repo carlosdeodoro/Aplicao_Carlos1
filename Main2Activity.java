@@ -149,7 +149,7 @@ public class Main2Activity extends AppCompatActivity {
                 for (int i = 0; i < pessoasJson.length(); i++) {
                     objpessoa = new JSONObject(pessoasJson.getString(i));
                     Log.i("Pessoa encontrada:", "nome" + objpessoa.getString("nome"));
-                    Pessoa objeto = new Pessoa();
+                    Pessoa objeto = new Pessoa(null);
                     objeto.setNome(objpessoa.getString("nome"));
                     objeto.setCpf(objpessoa.getString("cpf"));
                     pessoas.add(objeto);

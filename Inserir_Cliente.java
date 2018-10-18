@@ -15,6 +15,7 @@ public class Inserir_Cliente extends AppCompatActivity {
 
     String vTipo;
     Intent intent;
+    Pessoa pessoa;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -24,16 +25,43 @@ public class Inserir_Cliente extends AppCompatActivity {
         Button btnCadastrar = (Button) findViewById(R.id.btnCadastrar);
         intent = getIntent();
 
+        final EditText txtNome = (EditText) findViewById(R.id.txtNome);
+        final EditText txtCPF = (EditText) findViewById(R.id.txtCPF);
+
+
+
+        intent = getIntent();
+        if(intent != null) {
+            pessoa = intent.getExtras().getParcelable("pessoa");
+
+            if (pessoa != null) {
+                txtNome.setText(pessoa.getNome());
+                txtCPF.setText(pessoa.getCpf());
+            }
+        }
+
         btnCadastrar.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v){
-                EditText txtNome = (EditText) findViewById(R.id.txtNome);
-                EditText txtCPF = (EditText) findViewById(R.id.txtCPF);
+                if(pessoa == null) {
+                    DbHelper dbhelper = new DbHelper(getBaseContext());
+                    Pessoa p = new Pessoa(null);
+                    p.setNome(txtNome.getText().toString());
+                    p.setCpf(txtCPF.getText().toString());
+                    dbhelper.SalvarPessoa(p);
+                }
+                else {
+                    DbHelper dbHelper = new DbHelper(getBaseContext());
+                    Intent intent = getIntent();
+                    Integer id = intent.getIntExtra("ID",0);
+                    pessoa.setNome(txtNome.getText().toString());
+                    pessoa.setCpf(txtCPF.getText().toString());
+                    dbHelper.Alterar(pessoa, id);
 
-                DbHelper dbHelper = new DbHelper(getBaseContext());
-                SQLiteDatabase db = dbHelper.getWritableDatabase();
-                Cursor c = db.rawQuery("select max(CODIGO_CLIENTE) from CLIENTES",null);
-                int idcliente = 0;
+                }
+
+
+                /*nt idcliente = 0;
                 if (c.moveToFirst())
                 {
                     idcliente=c.getInt(0);
@@ -44,9 +72,8 @@ public class Inserir_Cliente extends AppCompatActivity {
                 contentValues.put("NOME_CLIENTE", txtNome.getText().toString());
                 contentValues.put("CPF", txtCPF.getText().toString());
                 long newRowId;
-                newRowId = db.insert("CLIENTES","CODIGO_CLIENTE" , contentValues);
+                newRowId = db.insert("CLIENTES","CODIGO_CLIENTE" , contentValues);*/
                 Toast.makeText(getBaseContext(), "Cadastro realizado com sucesso", Toast.LENGTH_SHORT).show();
-
 
 
             }
