@@ -12,8 +12,6 @@ import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
-import android.view.ContextMenu;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -35,35 +33,33 @@ public class Main3Activity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main3);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
         btinsericl = (Button)findViewById(R.id.btinserircl);
         btListcl = (Button)findViewById(R.id.btListcl);
+        btListcl.post(new Runnable(){
+            @Override
+            public void run() {
+                btListcl.performClick();
+            }
+        });
         listadecliente = (ListView) findViewById(R.id.listadecliente);
         btvoltarcl = (Button)findViewById(R.id.btvoltarcl);
-        setSupportActionBar(toolbar);
-        registerForContextMenu(listadecliente);
-
-
-
-
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
                         .setAction("Action", null).show();
-
-
             }
         });
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-
+        listadecliente.setOnItemClickListener(new ItemClickedListener());
         btinsericl.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View v) {Intent intent = new Intent(Main3Activity.this, Inserir_Cliente.class);
-                startActivity(intent);
+            public void onClick(View v) {
+                Intent intent = new Intent(getApplicationContext(), Inserir_Cliente.class);
+                startActivity( intent );
             }
         });
-
         btListcl.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -74,24 +70,23 @@ public class Main3Activity extends AppCompatActivity {
                     List<Pessoa> listadepessoas = new ArrayList<Pessoa>();
                     String erro="";
                     public void run() {
-
                         try {
                             handler.post(new Runnable() {
                                 public void run() {
                                     DbHelper mDbHelper = new DbHelper(getBaseContext());
                                     SQLiteDatabase db = mDbHelper.getWritableDatabase();
-                                    Cursor c = db.query("CLIENTES",new String[]{"CODIGO_CLIENTE","NOME_CLIENTE","CPF"},null,null,null,null,"CODIGO_CLIENTE");
+                                    Cursor c = db.query("CLIENTES",new String[]{"COD_CLIENTE","NOME","CPFCGC"},null,null,null,null,"NOME");
+                                    //listadepessoas = new ArrayList<Pessoa>();
                                     boolean proximo = true;
 
                                     if (c.moveToFirst())
                                     {
                                         while (proximo)
                                         {
-                                            Pessoa pessoa = new Pessoa(null);
-                                            pessoa.setId(c.getInt(0));
+                                            Pessoa pessoa = new Pessoa();
+                                            pessoa.setCodigo(c.getInt(0));
                                             pessoa.setNome(c.getString(1));
                                             pessoa.setCpf(c.getString(2));
-                                            pessoa.Resultado(c.getString(1), c.getString(2), c.getInt(0));
                                             listadepessoas.add(pessoa);
                                             proximo=c.moveToNext();
                                         }
@@ -103,59 +98,50 @@ public class Main3Activity extends AppCompatActivity {
                                                 android.R.layout.simple_list_item_1, listadepessoas);
                                         listadecliente.setAdapter(adapter);
                                     }
+//
                                 }
                             });
                         } catch (Exception e) {
+                            //mprogressDialog.setMessage("Erro: "+e.toString());
                             mprogressDialog.dismiss();
                             erro = e.toString();
                             handler.post(new Runnable() {
                                 public void run() {
-                                    Log.i("Clientes", "ERRO " + erro.toString());
+
+                                    Log.i("Clientes","ERRO "+erro.toString());
+
                                 }
                             });
-                            Log.i("Clientes", "ERRO " + e.toString());
+                            Log.i("Clientes", "ERRO "+e.toString());
                         }
-
                         mprogressDialog.dismiss();
-
                     }
-
                 }).start();
 
             }
-
         });
         btvoltarcl.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 finish();
             }
-
         });
 
-        listadecliente.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                DbHelper db = new DbHelper(getBaseContext());
-                Pessoa pessoa = (Pessoa) adapterView.getItemAtPosition(i);
-                Intent intent = new Intent(Main3Activity.this, Inserir_Cliente.class);
-                intent.putExtra("pessoa", pessoa);
-                intent.putExtra("id", pessoa.getId());
-                startActivity(intent);
-            }
-        });
 
     }
 
 
 
-    @Override
-    public void onCreateContextMenu(ContextMenu menu, View v , ContextMenu.ContextMenuInfo menuInfo)
-    {
-        if (v.getId() == R.id.listadecliente){
-            menu.add("Excluir");
+
+    private class ItemClickedListener implements android.widget.AdapterView.OnItemClickListener {
+        public void onItemClick(AdapterView<?> arg0, View arg1, int
+                position, long id) {
+            Pessoa pessoa = (Pessoa) arg0.getItemAtPosition(position);
+            Intent intent = new Intent(getApplicationContext(), Inserir_Cliente.class);
+            intent.putExtra("pessoaclicada", pessoa);
+            startActivity( intent );
         }
     }
 
-}
 
+}

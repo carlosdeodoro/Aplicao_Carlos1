@@ -34,25 +34,24 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Main2Activity extends AppCompatActivity {
-    Button btVoltar;
-    Button btPesquisar;
-    ListView listCliente;
-    String vTipo;
     Intent intent;
-
+    String vtipo;
+    Button btvoltar;
+    ListView listaclientes;
+    Button btpesq;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main2);
+        intent = getIntent();
+        vtipo = intent.getStringExtra("PARTESTE");
+        if (vtipo == null)
+            vtipo="";
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        btVoltar = (Button) findViewById(R.id.btVoltar);
-        btPesquisar = (Button) findViewById(R.id.btPesquisar);
-        listCliente = (ListView) findViewById(R.id.listCliente);
-        intent = getIntent();
-        vTipo = intent.getStringExtra("PARAMETRO");
-        if (vTipo == null) ;
-        vTipo = "";
+        btvoltar = (Button)findViewById(R.id.btVoltar);
+        listaclientes = (ListView) findViewById(R.id.listCliente);
+        btpesq = (Button)findViewById(R.id.btPesquisar);
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -60,64 +59,62 @@ public class Main2Activity extends AppCompatActivity {
             public void onClick(View view) {
                 Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
                         .setAction("Action", null).show();
-
-
             }
         });
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-
-        btVoltar.setOnClickListener(new View.OnClickListener() {
+        btvoltar.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (vTipo.equals("")) {
+                if (vtipo.equals(""))
                     finish();
-                } else {
-
+                else
+                {
                     setResult(RESULT_OK, intent);
-                    intent.putExtra("returnData", "Teste resalizado com sucesso");
+                    intent.putExtra("returnedData", "Teste de retorno com Sucesso!");
+                    finish();
                 }
-
             }
         });
-
-        btPesquisar.setOnClickListener(new View.OnClickListener() {
+        btpesq.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                new JsonAsyncTasck()
+                new DownloadJsonAsyncTask()
                         .execute("http://192.168.181.134/apicliente/api/cliente/retornaclientes?tipo=json");
+                //"http://10.0.2.2/apicliente/api/cliente/retornaclientes?tipo=json");
+                //"http://10.0.2.2:3630/api/cliente/retornaclientes?tipo=json");
+
             }
         });
-        listCliente.setOnItemClickListener(new ItemClickedListener());
-
+        listaclientes.setOnItemClickListener(new ItemClickedListener());
     }
 
-    class JsonAsyncTasck extends AsyncTask<String, Void, List<Pessoa>> {
+    class DownloadJsonAsyncTask extends AsyncTask<String, Void, List<Pessoa>> {
         ProgressDialog dialog;
 
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
-            dialog = ProgressDialog.show(Main2Activity.this, "Aguarde", "Processando Lista JASON");
+            dialog = ProgressDialog.show(Main2Activity.this, "Aguarde",
+                    "Fazendo download do JSON");
         }
-
 
         @Override
         protected List<Pessoa> doInBackground(String... params) {
             String urlString = params[0];
-            HttpClient httpcliente = new DefaultHttpClient();
+            HttpClient httpclient = new DefaultHttpClient();
             HttpGet httpget = new HttpGet(urlString);
             try {
-                HttpResponse response = httpcliente.execute(httpget);
+                HttpResponse response = httpclient.execute(httpget);
                 HttpEntity entity = response.getEntity();
                 if (entity != null) {
-                    InputStream inputstream = entity.getContent();
-                    String json = getStringFromInputStream(inputstream);
-                    inputstream.close();
+                    InputStream instream = entity.getContent();
+                    String json = getStringFromInputStream(instream);
+                    instream.close();
                     List<Pessoa> pessoas = getPessoas(json);
                     return pessoas;
                 }
-            } catch (IOException e) {
-                Log.e("Erro ao buscar clientes", "Falha ao tentar conectar");
+            } catch (Exception e) {
+                Log.e("Erro", "Falha ao acessar Web service", e);
             }
             return null;
         }
@@ -126,82 +123,94 @@ public class Main2Activity extends AppCompatActivity {
         protected void onPostExecute(List<Pessoa> result) {
             super.onPostExecute(result);
             dialog.dismiss();
-                if (result.size() > 0) {
+            if (result.size() > 0) {
 
-            ArrayAdapter<Pessoa> adapter = new ArrayAdapter<>
-                    (Main2Activity.this, android.R.layout.simple_list_item_1, result);
-            listCliente.setAdapter(adapter);
-        } else {
-            AlertDialog.Builder builder = new AlertDialog.Builder
-                    (Main2Activity.this)
-                    .setTitle("Erro")
-                    .setMessage("Não foi possivel encontrar os dados")
-                    .setPositiveButton("OK", null);
-            builder.create().show();
+                ArrayAdapter<Pessoa> adapter = new ArrayAdapter<Pessoa>(
+                        Main2Activity.this,
+                        android.R.layout.simple_list_item_1, result);
+                listaclientes.setAdapter(adapter);
+            } else {
+                AlertDialog.Builder builder = new AlertDialog.Builder(
+                        Main2Activity.this)
+                        .setTitle("Erro")
+                        .setMessage("Não foi possível acessar as informações!!")
+                        .setPositiveButton("OK", null);
+                builder.create().show();
+            }
         }
-    }
+
         private List<Pessoa> getPessoas(String jsonString) {
             List<Pessoa> pessoas = new ArrayList<Pessoa>();
             try {
                 JSONArray pessoasJson = new JSONArray(jsonString);
-                JSONObject objpessoa;
+                JSONObject pessoa;
 
                 for (int i = 0; i < pessoasJson.length(); i++) {
-                    objpessoa = new JSONObject(pessoasJson.getString(i));
-                    Log.i("Pessoa encontrada:", "nome" + objpessoa.getString("nome"));
-                    Pessoa objeto = new Pessoa(null);
-                    objeto.setNome(objpessoa.getString("nome"));
-                    objeto.setCpf(objpessoa.getString("cpf"));
-                    pessoas.add(objeto);
-                }
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
+                    pessoa = new JSONObject(pessoasJson.getString(i));
+                    Log.i("PESSOA ENCONTRADA: ",
+                            "nome=" + pessoa.getString("nome"));
 
+                    Pessoa objetoPessoa = new Pessoa();
+                    objetoPessoa.setNome(pessoa.getString("nome"));
+                    objetoPessoa.setCpf(pessoa.getString("cpf"));
+                    pessoas.add(objetoPessoa);
+                }
+
+            } catch (JSONException e) {
+                Log.e("Erro", "Erro no parsing do JSON", e);
+            }
             return pessoas;
         }
 
-
         private String getStringFromInputStream(InputStream is) {
-        BufferedReader br = null;
-        StringBuilder sb = new StringBuilder();
-        String line;
 
-        try {
-            br = new BufferedReader(new InputStreamReader(is));
-            while ((line = br.readLine()) != null) {
-                sb.append(line);
+            BufferedReader br = null;
+            StringBuilder sb = new StringBuilder();
+
+            String line;
+            try {
+
+                br = new BufferedReader(new InputStreamReader(is));
+                while ((line = br.readLine()) != null) {
+                    sb.append(line);
+                }
+
+            } catch (IOException e) {
+                e.printStackTrace();
+            } finally {
+                if (br != null) {
+                    try {
+                        br.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
             }
-        } catch (IOException e) {
-            e.printStackTrace();
+
+            return sb.toString();
+
         }
-        return sb.toString();
-    }
-
 
     }
+
     private class ItemClickedListener implements android.widget.AdapterView.OnItemClickListener {
-        public void onItemClick (AdapterView<?> arg0, View arg1, int position, long id) {
+        public void onItemClick(AdapterView<?> arg0, View arg1, int
+                position, long id) {
             Pessoa pessoa = (Pessoa) arg0.getItemAtPosition(position);
-            mensagem("Dados do cliente", pessoa.getNome() + " " + pessoa.getCpf());
+            mensagem("Dados do cliente",pessoa.getNome()+" "+pessoa.getCpf());
         }
     }
-    public void mensagem (String titulo, String mensagem) {
-        android.app.AlertDialog.Builder alertamensagem = new android.app.AlertDialog.Builder(Main2Activity.this);
-        alertamensagem.setMessage(mensagem);
-        alertamensagem.setMessage(titulo);
-        alertamensagem.setNeutralButton("OK", new DialogInterface.OnClickListener() {
-            @Override
+
+    public void mensagem(String titulo, String mensagem) {
+        android.app.AlertDialog.Builder alertateste = new android.app.AlertDialog.Builder(Main2Activity.this);
+        alertateste.setMessage(mensagem);
+        alertateste.setTitle(titulo);
+        alertateste.setNeutralButton("OK", new DialogInterface.OnClickListener() {
+
             public void onClick(DialogInterface dialog, int which) {
 
             }
         });
-        alertamensagem.show();
+        alertateste.show();
     }
 }
-
-
-
-
-
-

@@ -14,82 +14,82 @@ import android.database.Cursor;
 
 public class Inserir_Cliente extends AppCompatActivity {
 
-    Intent intent;
-    Pessoa pessoa;
+    private EditText edNome;
+    private EditText edCPF;
+    private Pessoa pessoaclicada;
     Button btnCadastrar;
     Button btvoltar;
+    Button btexcluir;
+    boolean ehedicao;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_inserir__cliente);
+
+        edNome = (EditText) findViewById(R.id.txtNome);
+        edCPF = (EditText) findViewById(R.id.txtCPF);
+        pessoaclicada = (Pessoa) getIntent().getSerializableExtra( "pessoaclicada" );
         btvoltar = (Button)findViewById(R.id.btvoltar);
+        btexcluir = (Button)findViewById(R.id.btnExcluir);
         btnCadastrar = (Button) findViewById(R.id.btnCadastrar);
-        intent = getIntent();
-
-        final EditText txtNome = (EditText) findViewById(R.id.txtNome);
-        final EditText txtCPF = (EditText) findViewById(R.id.txtCPF);
-
-
-
-       /* intent = getIntent();
-        if(intent != null) {
-            pessoa = intent.getExtras().getParcelable("pessoa");
-
-            if (pessoa != null) {
-                txtNome.setText(pessoa.getNome());
-                txtCPF.setText(pessoa.getCpf());
-            }
+        if ( pessoaclicada != null ) {
+            edNome.setText( pessoaclicada.getNome() );
+            edCPF.setText( pessoaclicada.getCpf() );
+            ehedicao = true;
         }
-*/
-        btnCadastrar.setOnClickListener(new View.OnClickListener() {
+        else {
+            ehedicao = false;
+        }
+
+        btexcluir.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View v){
-try {
-    DbHelper dbhelper = new DbHelper(getBaseContext());
-    Pessoa p = new Pessoa(null);
-    p.setNome(txtNome.getText().toString());
-    p.setCpf(txtCPF.getText().toString());
-    dbhelper.SalvarPessoa(p);
-
-               /* else {
-                    DbHelper dbHelper = new DbHelper(getBaseContext());
-                    Intent intent = getIntent();
-                    Integer id = intent.getIntExtra("ID",0);
-                    pessoa_db.setNome(txtNome.getText().toString());
-                    pessoa_db.setCpf(txtCPF.getText().toString());
-                    dbHelper.Alterar(pessoa_db, id);
-
-                }*/
-
-
-                /*nt idcliente = 0;
-                if (c.moveToFirst())
-                {
-                    idcliente=c.getInt(0);
-                }
-                idcliente += 1;
-                ContentValues contentValues = new ContentValues();
-                contentValues.put("CODIGO_CLIENTE - ", idcliente);
-                contentValues.put("NOME_CLIENTE", txtNome.getText().toString());
-                contentValues.put("CPF", txtCPF.getText().toString());
-                long newRowId;
-                newRowId = db.insert("CLIENTES","CODIGO_CLIENTE" , contentValues);*/
-    Toast.makeText(getBaseContext(), "Cadastro realizado com sucesso", Toast.LENGTH_SHORT).show();
-
-}catch ( Exception e){
-    Log.e("ERRO!", "ERRO");
-}
+            public void onClick(View v) {
+                DbHelper mDbHelper = new DbHelper(getBaseContext());
+                SQLiteDatabase db = mDbHelper.getWritableDatabase();
+                String ids = Integer.toString(pessoaclicada.getCodigo());
+                String[] args = { ids };
+                db.delete("CLIENTES","COD_CLIENTE=?", args  );
+                finish();
             }
         });
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
+        btnCadastrar.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (  ehedicao  ) {
+                    DbHelper mDbHelper = new DbHelper(getBaseContext());
+                    SQLiteDatabase db = mDbHelper.getWritableDatabase();
+                    ContentValues values = new ContentValues();
+                    values.put("NOME", edNome.getText().toString());
+                    values.put("CPFCGC", edCPF.getText().toString());
+                    String ids = Integer.toString(pessoaclicada.getCodigo());
+                    String[] args = { ids };
+                    db.update("CLIENTES", values,"COD_CLIENTE=?", args  );
+                  finish();
+
+                }
+                else{
+                    DbHelper mDbHelper = new DbHelper(getBaseContext());
+                    SQLiteDatabase db = mDbHelper.getWritableDatabase();
+                    ContentValues values = new ContentValues();
+                    values.put("NOME", edNome.getText().toString());
+                    values.put("CPFCGC", edCPF.getText().toString());
+                    db.insert( "CLIENTES", null, values );
+                   finish();
+
+                }
+            }
+        });
         btvoltar.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                    setResult(RESULT_OK, intent);
-                    intent.putExtra("returnedData", "Teste de retorno com Sucesso!");
-                    finish();
-
+                finish();
             }
         });
+
     }
+
+
+
+
 }
